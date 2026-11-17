@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>AutoBlinds</title>
+<link rel="apple-touch-icon" sizes="180x180" href="http://{{ val_ip }}/static/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://{{ val_ip }}/static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="http://{{ val_ip }}/static/favicon-16x16.png">
+<link rel="manifest" href="http://{{ val_ip }}/static/site.webmanifest">
+<link rel="apple-touch-icon" href="http://{{ val_ip }}/static/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Autoblinds">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+<style type="text/css">
+  body {
+    background-color: SkyBlue;
+    font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 36pt;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    text-decoration: none;
+    color: black;
+  }
+  div.header {
+    height: 8vh;
+    text-align: center;
+    padding: 10px;
+  }
+  p.message {
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+  }
+  div.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-template-rows: repeat(5, auto);
+    grid-gap: 1vw;
+    padding: 1vw;
+    width: 98vw;
+  }
+  div.grid-child {
+    border: 1px solid gray;
+    background-color: white;
+    height: 15vh;
+  }
+  div.grid-child p {
+    margin-top: 10vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    font-size: 3vh;
+  }
+  div.ctrl-down {
+    background-image: url('/static/down.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10vh 10vh;
+  }
+  div.ctrl-up {
+    background-image: url('/static/up.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 10vh 10vh;
+    text-align: right;
+  }
+</style>
+</head>
+
+<body>
+<div class="header">
+  <h1><a href="/" style="color: black;">AutoBlinds</a></h1>
+  <p class="message" id="header_value"></p>
+</div>
+<div class="grid-container">
+  <div class="grid-child ctrl-down" style="background-color: PeachPuff;" onclick="sendAll('fullDown');"></div>
+  <div class="grid-child ctrl-up" style="background-color: PeachPuff;" onclick="sendAll('fullUp');"></div>
+  <div class="grid-child ctrl-down" onclick="sendCmd('http://{{ val_ip_a }}/fullDown');"><p id="dn_a_value"></p></div>
+  <div class="grid-child ctrl-up" onclick="sendCmd('http://{{ val_ip_a }}/fullUp');"><p id="up_a_value"></p></div>
+  <div class="grid-child ctrl-down" onclick="sendCmd('http://{{ val_ip_b }}/fullDown');"><p id="dn_b_value"></p></div>
+  <div class="grid-child ctrl-up" onclick="sendCmd('http://{{ val_ip_b }}/fullUp');"><p id="up_b_value"></p></div>
+  <div class="grid-child ctrl-down" onclick="sendCmd('http://{{ val_ip_c }}/fullDown');"><p id="dn_c_value"></p></div>
+  <div class="grid-child ctrl-up" onclick="sendCmd('http://{{ val_ip_c }}/fullUp');"><p id="up_c_value"></p></div>
+  <div class="grid-child ctrl-down" onclick="sendCmd('http://{{ val_ip_d }}/fullDown');"><p id="dn_d_value"></p></div>
+  <div class="grid-child ctrl-up" onclick="sendCmd('http://{{ val_ip_d }}/fullUp');"><p id="up_d_value"></p></div>
+</div>
+<script type="text/javascript">
+  const now = "{{ val_now }}";
+  const s_brightness = "{{ val_s_brightness }}";
+  const w_brightness = "{{ val_w_brightness }}";
+  const message = "{{ val_message }}";
+  const dn_a = "{{ val_dn_a }}";
+  const up_a = "{{ val_up_a }}";
+  const dn_b = "{{ val_dn_b }}";
+  const up_b = "{{ val_up_b }}";
+  const dn_c = "{{ val_dn_c }}";
+  const up_c = "{{ val_up_c }}";
+  const dn_d = "{{ val_dn_d }}";
+  const up_d = "{{ val_up_d }}";
+  
+  function addDot(text = "00") {
+    if (parseInt(text) < 10) text = "0" + text;
+    const pos = text.length-1;
+    return text.slice(0, pos) + '.' + text.slice(pos);
+  }
+  
+  function addColon(text = "000") {
+    if (parseInt(text) < 100) text = "0" + text;
+    if (parseInt(text) < 10) text = "0" + text;
+    const pos = text.length-2;
+    return text.slice(0, pos) + ':' + text.slice(pos);
+  }
+  
+  document.getElementById("header_value").innerHTML = "It is now "+addColon(now)+" | Brightness: S "+addDot(s_brightness)+"%, W "+addDot(w_brightness)+"%";
+  
+  if (message > '') alert(message);
+  
+  document.getElementById("dn_a_value").innerHTML = addColon(dn_a);
+  document.getElementById("up_a_value").innerHTML = addColon(up_a);
+  document.getElementById("dn_b_value").innerHTML = addColon(dn_b);
+  document.getElementById("up_b_value").innerHTML = addColon(up_b);
+  document.getElementById("dn_c_value").innerHTML = addColon(dn_c);
+  document.getElementById("up_c_value").innerHTML = addColon(up_c);
+  document.getElementById("dn_d_value").innerHTML = addColon(dn_d);
+  document.getElementById("up_d_value").innerHTML = addColon(up_d);
+  
+  async function sendCmd(url) {
+    try {
+      const response = await fetch(url); // Non-blocking: execution continues while waiting for response
+      if (!response.ok) throw new Error("HTTP error! status: ${response.status}");
+      const data = await response.json(); // Non-blocking: execution continues while parsing JSON
+      console.log(data);
+    } catch (error) {
+      //console.error('Error fetching data:', error);
+    }
+  }
+  
+  function sendAll(cmd) {
+    sendCmd('http://{{ val_ip_a }}/'+cmd);
+    sendCmd('http://{{ val_ip_b }}/'+cmd);
+    sendCmd('http://{{ val_ip_c }}/'+cmd);
+    sendCmd('http://{{ val_ip_d }}/'+cmd);
+  }
+</script>
+</body>
+
+</html>
